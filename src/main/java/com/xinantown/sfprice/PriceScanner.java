@@ -114,9 +114,12 @@ public final class PriceScanner {
     private double compute(SlimefunItemView item) {
         ItemStack[] recipe = item.recipe();
         if (recipe == null || recipe.length == 0) return 0.0;
+        ItemStack output = item.recipeOutput();
         double sum = 0.0;
-        for (ItemStack slot : recipe) {
+        for (int i = 0; i < recipe.length; i++) {
+            ItemStack slot = recipe[i];
             if (slot == null || airCheck.test(slot)) continue;
+            if (isOutputSlot(slot, output)) continue; // Slimefun 9 格配方 index 8 = 输出，不算材料
             double unit = materialPrice(slot);
             if (unit < 0) {
                 recordMissing(slot);
@@ -126,6 +129,12 @@ public final class PriceScanner {
         }
         double mult = multiplier.apply(item.addonName());
         return round2(sum * mult);
+    }
+
+    /** 输出格判定：与 getRecipeOutput() 同类型且数量一致（index 8 约定，防御性按内容比对）。 */
+    private static boolean isOutputSlot(ItemStack slot, ItemStack output) {
+        if (output == null || slot == null) return false;
+        return slot.getType() == output.getType() && slot.getAmount() == output.getAmount();
     }
 
     /** 材料单价：Slimefun 物品 → 递归；原版 → 价表；缺价返回 -1。 */

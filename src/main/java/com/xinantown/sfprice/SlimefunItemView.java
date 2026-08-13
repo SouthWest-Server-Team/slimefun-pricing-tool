@@ -26,6 +26,9 @@ public interface SlimefunItemView {
 
     String addonName();
 
+    /** 配方输出物品（Slimefun 9 格配方 index 8 = 输出；成本计算必须排除输出格）。 */
+    ItemStack recipeOutput();
+
     /** 包装真实 SlimefunItem。 */
     static SlimefunItemView adapt(SlimefunItem item) {
         return new SlimefunItemView() {
@@ -43,6 +46,11 @@ public interface SlimefunItemView {
             public String recipeTypeKey() {
                 var type = item.getRecipeType();
                 return type == null ? null : type.getKey().getKey();
+            }
+
+            @Override
+            public ItemStack recipeOutput() {
+                return item.getRecipeOutput();
             }
 
             @Override

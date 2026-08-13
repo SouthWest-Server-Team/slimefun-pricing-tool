@@ -33,7 +33,8 @@ class PriceScannerTest {
     private static final String CRAFT = "enhanced_crafting_table";
 
     /** fake 物品视图。 */
-    private record FakeItem(String id, ItemStack[] recipe, String typeKey, String addon) implements SlimefunItemView {
+    private record FakeItem(String id, ItemStack[] recipe, String typeKey, String addon,
+                            ItemStack output) implements SlimefunItemView {
         @Override
         public String addonName() {
             return addon;
@@ -43,6 +44,16 @@ class PriceScannerTest {
         public String recipeTypeKey() {
             return typeKey;
         }
+
+        @Override
+        public ItemStack recipeOutput() {
+            return output;
+        }
+    }
+
+    /** 便捷构造：无输出（输出单独存的配方）。 */
+    private static FakeItem item(String id, ItemStack[] recipe) {
+        return new FakeItem(id, recipe, CRAFT, "Slimefun", null);
     }
 
     private static ItemStack[] recipe(ItemStack... slots) {
@@ -99,9 +110,8 @@ class PriceScannerTest {
     void pureVanillaRecipe_usesMaterialPrices() {
         // 3 铁锭 → 5.0 × 3 = 15，× 1.2 = 18
         Map<String, SlimefunItemView> items = new LinkedHashMap<>();
-        items.put("TEST_INGOT", new FakeItem("TEST_INGOT",
-                recipe(stack(Material.IRON_INGOT, 1), stack(Material.IRON_INGOT, 1), stack(Material.IRON_INGOT, 1)),
-                CRAFT, "Slimefun"));
+        items.put("TEST_INGOT", item("TEST_INGOT",
+                recipe(stack(Material.IRON_INGOT, 1), stack(Material.IRON_INGOT, 1), stack(Material.IRON_INGOT, 1))));
         PriceScanner s = scanner(items);
         s.process(items.get("TEST_INGOT"));
         assertEquals(18.0, s.pricedView().get("TEST_INGOT"), 1e-9);
@@ -110,14 +120,29 @@ class PriceScannerTest {
     }
 
     @Test
+    void outputSlot_excludedFromCost() {
+        // 配方：2 PAPER 材料 + index 8 输出铁锭（与 recipeOutput 一致）→ 只算 2 PAPER
+        // PAPER 价表未收录（缺价按 0）→ 期望 0？不——用价表内材料验证排除逻辑更清楚：
+        // 2 铁锭材料 + 1 输出钻石 → 只算 2 铁锭 = 10×1.2 = 12
+        ItemStack out = stack(Material.DIAMOND, 1);
+        Map<String, SlimefunItemView> items = new LinkedHashMap<>();
+        items.put("WITH_OUTPUT", new FakeItem("WITH_OUTPUT",
+                recipe(stack(Material.IRON_INGOT, 1), stack(Material.IRON_INGOT, 1), out),
+                CRAFT, "Slimefun", out));
+        PriceScanner s = scanner(items);
+        s.process(items.get("WITH_OUTPUT"));
+        assertEquals(12.0, s.pricedView().get("WITH_OUTPUT"), 1e-9);
+    }
+
+    @Test
     void slimefunChain_recursiveCost() {
         // A = 2 铁锭 (10) ×1.2 = 12；B = 2 × A(12×2=24) + 1 铁锭(5) = 29 ×1.2 = 34.8
         Map<String, SlimefunItemView> items = new LinkedHashMap<>();
-        items.put("A", new FakeItem("A",
-                recipe(stack(Material.IRON_INGOT, 2)), CRAFT, "Slimefun"));
-        items.put("B", new FakeItem("B",
+        items.put("A", item("A",
+                recipe(stack(Material.IRON_INGOT, 2))));
+        items.put("B", item("B",
                 recipe(sfStack(Material.PAPER, 1, "A"), sfStack(Material.PAPER, 1, "A"),
-                        stack(Material.IRON_INGOT, 1)), CRAFT, "Slimefun"));
+                        stack(Material.IRON_INGOT, 1))));
         PriceScanner s = scanner(items);
         s.process(items.get("B"));
         // A 先被递归计算
@@ -129,8 +154,8 @@ class PriceScannerTest {
     void missingMaterial_recordedAndCounted() {
         // 配方含价表外材料（BEDROCK 未收录）→ 记缺价、该格按 0
         Map<String, SlimefunItemView> items = new LinkedHashMap<>();
-        items.put("X", new FakeItem("X",
-                recipe(stack(Material.IRON_INGOT, 1), stack(Material.BEDROCK, 1)), CRAFT, "Slimefun"));
+        items.put("X", item("X",
+                recipe(stack(Material.IRON_INGOT, 1), stack(Material.BEDROCK, 1))));
         PriceScanner s = scanner(items);
         s.process(items.get("X"));
         // 只有铁锭计入：5 × 1.2 = 6；基岩缺价
@@ -142,10 +167,10 @@ class PriceScannerTest {
     void cycle_detectedNotInfinite() {
         // A 配方含 B、B 配方含 A（PDC 标记触发递归；computing 栈防死循环）
         Map<String, SlimefunItemView> items = new LinkedHashMap<>();
-        items.put("A", new FakeItem("A",
-                recipe(sfStack(Material.PAPER, 1, "B")), CRAFT, "Slimefun"));
-        items.put("B", new FakeItem("B",
-                recipe(sfStack(Material.PAPER, 1, "A")), CRAFT, "Slimefun"));
+        items.put("A", item("A",
+                recipe(sfStack(Material.PAPER, 1, "B"))));
+        items.put("B", item("B",
+                recipe(sfStack(Material.PAPER, 1, "A"))));
         PriceScanner s = scanner(items);
         s.process(items.get("A"));
         // 循环：A→B→A，computing 检测后 B 返回 0 → A = 0×1.2 = 0
@@ -157,7 +182,7 @@ class PriceScannerTest {
     void noRecipeType_markedManualWhitelist() {
         // mob_drop 类型 → noRecipe（白名单手动定价）
         Map<String, SlimefunItemView> items = new LinkedHashMap<>();
-        items.put("DROPPED", new FakeItem("DROPPED", recipe(), "mob_drop", "Slimefun"));
+        items.put("DROPPED", new FakeItem("DROPPED", recipe(), "mob_drop", "Slimefun", null));
         PriceScanner s = scanner(items);
         s.process(items.get("DROPPED"));
         assertTrue(s.noRecipeView().contains("DROPPED"));
