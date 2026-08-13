@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.xinantown</groupId>
+    <artifactId>SfPricingTool</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>SfPricingTool</name>
+    <description>Slimefun 成本推导脚本 — 扫描配方算 base 价，导出 slimefun-prices.yml</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>leaf-local-api</id>
+            <url>file:///D:/Desktop Box/project/XiNan/XiNanTown/libraries/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>cn.dreeam.leaf</groupId>
+            <artifactId>leaf-api</artifactId>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Slimefun4（软依赖，编译期 provided；服务器实际 jar 已 install 到本地 m2） -->
+        <dependency>
+            <groupId>io.github.thebusybiscuit</groupId>
+            <artifactId>Slimefun4</artifactId>
+            <version>2026.07-release</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- 纯 JVM 测试 mock Bukkit 对象（ItemStack 构造会触发 Registry 初始化） -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>5.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency><groupId>net.kyori</groupId><artifactId>adventure-api</artifactId><version>4.26.1</version><scope>provided</scope></dependency>
+        <dependency><groupId>net.md-5</groupId><artifactId>bungeecord-chat</artifactId><version>1.21-R0.2-deprecated+build.21</version><scope>provided</scope></dependency>
+        <!-- 服务端自带 snakeyaml（Bukkit YamlConfiguration 依赖），编译期 provided -->
+        <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><version>2.4</version><scope>provided</scope></dependency>
+        <dependency><groupId>org.jetbrains</groupId><artifactId>annotations</artifactId><version>24.0.1</version><scope>provided</scope></dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

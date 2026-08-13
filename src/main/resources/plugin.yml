@@ -1,0 +1,20 @@
+name: SfPricingTool
+version: 1.0.0
+main: com.xinantown.sfprice.SfPricingPlugin
+api-version: '1.16'
+author: XiNanTown Team (金山)
+description: Slimefun 成本推导 — 扫描配方算 base 价导出 YAML（需求 v1.4 §Slimefun 物品定价）
+softdepend: [Slimefun]
+
+commands:
+  sfprice:
+    description: Slimefun 成本推导工具
+    usage: |
+      /sfprice scan           扫描全部启用的 Slimefun 物品，计算 base 价，导出 slimefun-prices.yml
+      /sfprice scan <id>      只扫描指定物品（调试用）
+    permission: sfprice.admin
+
+permissions:
+  sfprice.admin:
+    description: Slimefun 成本推导工具管理权限
+    default: op
