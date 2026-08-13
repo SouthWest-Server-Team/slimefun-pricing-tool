@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -56,25 +57,38 @@ public final class PriceScanner {
     /**
      * 全参构造。{@code airCheck} 默认 {@code s -> s.getType().isAir()}；
      * 纯 JVM 测试注入恒 false（Paper 的 isAir() 懒加载 RegistryAccess，无服务器必炸）。
+     *
+     * @param priceTableOverride 外部价表输入流（material-prices.yml），可为 null 用内置
      */
     public PriceScanner(Function<String, Double> multiplier,
                         Function<String, SlimefunItemView> itemLookup,
                         Function<ItemStack, String> sfIdResolver) {
-        this(multiplier, itemLookup, sfIdResolver, s -> s.getType().isAir());
+        this(multiplier, itemLookup, sfIdResolver, s -> s.getType().isAir(), null);
     }
 
     PriceScanner(Function<String, Double> multiplier,
                  Function<String, SlimefunItemView> itemLookup,
                  Function<ItemStack, String> sfIdResolver,
                  java.util.function.Predicate<ItemStack> airCheck) {
+        this(multiplier, itemLookup, sfIdResolver, airCheck, null);
+    }
+
+    PriceScanner(Function<String, Double> multiplier,
+                 Function<String, SlimefunItemView> itemLookup,
+                 Function<ItemStack, String> sfIdResolver,
+                 java.util.function.Predicate<ItemStack> airCheck,
+                 InputStream priceTableOverride) {
         this.multiplier = multiplier;
         this.itemLookup = itemLookup;
         this.sfIdResolver = sfIdResolver;
         this.airCheck = airCheck;
+        if (priceTableOverride != null) {
+            materials.loadExternal(priceTableOverride);
+        }
     }
 
     /** 全量扫描（仅当 Slimefun 加载时调用）。 */
-    public static ScanResult scan(String onlyId) {
+    public static ScanResult scan(String onlyId, InputStream priceTableOverride) {
         List<SlimefunItem> items;
         try {
             items = Slimefun.getRegistry().getEnabledSlimefunItems();
@@ -86,7 +100,9 @@ public final class PriceScanner {
                     SlimefunItem item = SlimefunItem.getById(id);
                     return item == null ? null : SlimefunItemView.adapt(item);
                 },
-                PriceScanner::pdcSfId);
+                PriceScanner::pdcSfId,
+                s -> s.getType().isAir(),
+                priceTableOverride);
         for (SlimefunItem item : items) {
             String id = item.getId();
             if (onlyId != null && !onlyId.equalsIgnoreCase(id)) continue;

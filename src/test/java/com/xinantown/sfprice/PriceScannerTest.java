@@ -206,4 +206,21 @@ class PriceScannerTest {
         assertEquals(5.0, t.priceOf(stack(Material.IRON_INGOT, 1)), 1e-9);
         assertNull(t.priceOf(stack(Material.BEDROCK, 1)), "价表外材料应返回 null（缺价）");
     }
+
+    @Test
+    void materialPriceTable_loadsExternalYaml() throws Exception {
+        // 从 resources 加载 material-prices.yml（真实缺价清单覆盖验证：LEATHER/GLASS/PAPER 等）
+        MaterialPriceTable t = new MaterialPriceTable();
+        try (var in = getClass().getResourceAsStream("/material-prices.yml")) {
+            assertNotNull(in, "material-prices.yml 应存在于 resources");
+            t.loadExternal(in);
+        }
+        assertNotNull(t.priceOf(stack(Material.LEATHER, 1)), "LEATHER 应已定价（缺价清单第 1 项）");
+        assertNotNull(t.priceOf(stack(Material.GLASS, 1)), "GLASS 应已定价");
+        assertNotNull(t.priceOf(stack(Material.PAPER, 1)), "PAPER 应已定价");
+        assertNotNull(t.priceOf(stack(Material.CHEST, 1)), "CHEST 应已定价");
+        assertNotNull(t.priceOf(stack(Material.STRUCTURE_BLOCK, 1)), "STRUCTURE_BLOCK 应已定价（0 值占位）");
+        // 内置锚点仍可用（外部覆盖不破坏）
+        assertEquals(0.1, t.priceOf(stack(Material.COBBLESTONE, 1)), 1e-9);
+    }
 }

@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
 import java.util.List;
 
 /** /sfprice 命令：scan（全量扫描） / scan &lt;id&gt;（单物品调试）。 */
@@ -37,9 +38,11 @@ public final class SfPriceCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         String id = args.length >= 2 ? args[1] : null;
+        // 读取材料价表：数据目录可编辑版优先，其次 resources 内置版
+        InputStream priceTable = plugin.getPriceTableInput();
         // 扫描可能耗时（全量物品 × 递归配方），异步执行，完成后主线程发结果
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-            ScanResult result = PriceScanner.scan(id);
+            ScanResult result = PriceScanner.scan(id, priceTable);
             plugin.getServer().getScheduler().runTask(plugin, () -> report(sender, result));
         });
         sender.sendMessage("§e正在扫描" + (id == null ? "全部物品" : " " + id) + "…（完成会通知）");

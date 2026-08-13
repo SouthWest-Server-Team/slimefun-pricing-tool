@@ -1,16 +1,28 @@
 package com.xinantown.sfprice;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * 原版材料 base 价表（需求 v1.4 §基础物价表 + 三锚点推导；2026-08-13 金山定稿）。
  *
- * <p>Slimefun 配方中出现的原版材料，优先查本表；查不到则记入"缺价"清单（ScanResult.missingMaterials）。
- * 物品识别用 {@link ItemStack#getType()}（Material），忽略 NBT/数量（数量单独乘）。
+ * <p>两级来源合并：
+ * <ol>
+ *   <li><b>内置默认</b>：核心锚点 + 需求 v1.4 手动定价（代码内，兜底不可缺）</li>
+ *   <li><b>material-prices.yml</b>：resources 内置完整价表（629 种，按三锚点推导生成），
+ *       插件启动时加载合并——管理员可直接编辑该文件调价，无需重编译</li>
+ * </ol>
+ *
+ * <p>物品识别用 {@link ItemStack#getType()}（Material），忽略 NBT/数量（数量单独乘）。
  */
 public final class MaterialPriceTable {
 
@@ -54,6 +66,33 @@ public final class MaterialPriceTable {
         put(Material.IRON_CHESTPLATE, 60.0);
         put(Material.IRON_BOOTS, 30.0);
         put(Material.GOLDEN_SWORD, 45.0);
+    }
+
+    /** 加载外部/内置 material-prices.yml 并合并进价表（新键覆盖、旧键保留）。 */
+    public void loadExternal(InputStream in) {
+        if (in == null) return;
+        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(
+                new InputStreamReader(in, StandardCharsets.UTF_8));
+        ConfigurationSection sec = cfg.getConfigurationSection("prices");
+        if (sec == null) return;
+        for (String key : sec.getKeys(false)) {
+            prices.put(key, sec.getDouble(key));
+        }
+    }
+
+    /** 加载服务器数据目录的 material-prices.yml（管理员可编辑调价；不存在则跳过）。 */
+    public void loadFromDataFolder(File dataFolder) {
+        if (dataFolder == null) return;
+        File f = new File(dataFolder, "material-prices.yml");
+        if (f.exists()) {
+            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(f);
+            ConfigurationSection sec = cfg.getConfigurationSection("prices");
+            if (sec != null) {
+                for (String key : sec.getKeys(false)) {
+                    prices.put(key, sec.getDouble(key));
+                }
+            }
+        }
     }
 
     private void put(Material m, double price) {
