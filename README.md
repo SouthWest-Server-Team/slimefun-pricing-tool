@@ -57,10 +57,36 @@ recipe-cycles:              # 配方循环依赖（A↔B）
 
 ## 构建
 
+### 前置：安装本地依赖（首次构建必做）
+
+Slimefun4 不在任何公共 Maven 仓库（官方走 SpigotMC 下载），需手动 install 到本地 m2：
+
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot"
-.\mvnw.cmd test       # 运行单测（7 例，纯 JVM 无需服务器）
-.\mvnw.cmd package    # 打包 target/SfPricingTool-1.0.0.jar
+# 1. 设置 JDK21（团队环境路径）
+$env:JAVA_HOME = "D:\Java_Home\jdk-21"
+
+# 2. 安装 Slimefun4 到本地 m2（用 -DgeneratePom=true 生成干净 pom，
+#    绕过 Slimefun4 传递依赖 dough:1.3.1-SNAPSHOT 无法从公共仓库解析的问题——
+#    本插件代码只用 SlimefunItem/RecipeType/Slimefun 三个类，不 import dough）
+cmd /c "C:\tools\apache-maven-3.9.16\bin\mvn.cmd install:install-file `
+  -Dfile='<服务端plugins目录>\Slimefun-2026.07-release.jar' `
+  -DgroupId=io.github.thebusybiscuit `
+  -DartifactId=Slimefun4 `
+  -Dversion=2026.07-release `
+  -Dpackaging=jar `
+  -DgeneratePom=true"
+```
+
+> ⚠️ `<服务端plugins目录>` 换成实际路径（本机为 `D:\Desktop Box\project\XiNan\XiNanTown\plugins\[S][粘液科技]Slimefun-2026.07-release.jar`）。
+
+### 构建命令
+
+```powershell
+$env:JAVA_HOME = "D:\Java_Home\jdk-21"
+Push-Location "D:\Desktop Box\project\XiNan\slimefun-pricing-tool"
+cmd /c "C:\tools\apache-maven-3.9.16\bin\mvn.cmd clean test"      # 运行单测（7 例，纯 JVM 无需服务器）
+cmd /c "C:\tools\apache-maven-3.9.16\bin\mvn.cmd clean package"  # 打包 target/SfPricingTool-1.0.0.jar
+Pop-Location
 ```
 
 依赖：Leaf/Paper API 1.21.11（provided）、Slimefun4 2026.07-release（provided，需先 install 到本地 m2）。
@@ -68,5 +94,5 @@ $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-21.0.9.10-hotspot"
 ## 已知限制
 
 - `prices` 只导出 base 价 > 0 的物品；值为 0 的物品（循环依赖或缺材料）不出现
-- Networks / SlimeGlue 加工系数暂按基础档 1.2（待金山确认是否调档）
+- Networks / SlimeGlue 加工系数按基础档 1.2（2026-08-13 已确认：基础设施附属归基础档，非高级科技）
 - 缺价材料按 0 计入成本，最终价可能偏低——请按 `missing-material-prices` 清单补齐 MaterialPriceTable 后再重扫

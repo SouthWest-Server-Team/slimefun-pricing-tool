@@ -19,8 +19,8 @@ public final class AddonMultiplier {
             "Slimefun", 1.2,             // 基础（本体）
             "FoxyMachines", 1.5,         // 中级（神秘科技）
             "InfinityExpansion", 2.0,    // 高级（无尽科技）
-            "Networks", 1.2,             // 网络（归基础档，待金山确认）
-            "SlimeGlue", 1.2             // 粘液胶（归基础档，待金山确认）
+            "Networks", 1.2,             // 网络（基础设施附属，归基础档，2026-08-13 确认）
+            "SlimeGlue", 1.2            // 粘液胶（基础设施附属，归基础档，2026-08-13 确认）
     );
 
     /** 默认基础系数（未知附属）。 */
