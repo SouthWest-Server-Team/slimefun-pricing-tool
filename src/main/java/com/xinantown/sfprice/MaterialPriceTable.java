@@ -18,7 +18,7 @@ import java.util.Map;
  * <p>两级来源合并：
  * <ol>
  *   <li><b>内置默认</b>：核心锚点 + 需求 v1.4 手动定价（代码内，兜底不可缺）</li>
- *   <li><b>material-prices.yml</b>：resources 内置完整价表（629 种，按三锚点推导生成），
+ *   <li><b>material-prices.yml</b>：resources 内置完整价表（626 种，按三锚点推导生成），
  *       插件启动时加载合并——管理员可直接编辑该文件调价，无需重编译</li>
  * </ol>
  *
