@@ -14,6 +14,7 @@ base 价 = Σ(配方材料数量 × 材料单价) × 加工系数(来源附属)
   - 材料是 Slimefun 物品（PDC 标记 `slimefun_item`）→ 递归计算其 base 价
   - 材料是原版物品 → 查原版材料价表（内置 `material-prices.yml`，626 种，三锚点推导；启动时复制到数据目录，管理员可编辑调价）
   - 原版材料价表未收录 → 记入 `missing-material-prices`（该格按 0 计入，报告标出）
+  - ⚠️ **绿宝石系列（EMERALD/EMERALD_BLOCK/EMERALD_ORE）按「封闭货币市场定价」原则不标银价**，落入缺价清单按 0 计——绿宝石是 NPC 封闭货币，其银币价值由市场套利决定，非系统设定
 - **配方输出格排除**：Slimefun 9 格配方 index 8 = 输出（`getRecipeOutput()`），不参与材料成本
 - **加工系数分档**（按物品来源附属插件名）：
 
