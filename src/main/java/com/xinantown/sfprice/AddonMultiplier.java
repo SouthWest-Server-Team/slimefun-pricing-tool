@@ -19,6 +19,7 @@ public final class AddonMultiplier {
             "Slimefun", 1.2,             // 基础（本体）
             "FoxyMachines", 1.5,         // 中级（神秘科技）
             "InfinityExpansion", 2.0,    // 高级（无尽科技）
+            "CrystamaeHistoria", 2.0,    // 魔法（水晶编年史，需求 v1.4 魔法档）
             "Networks", 1.2,             // 网络（基础设施附属，归基础档，2026-08-13 确认）
             "SlimeGlue", 1.2            // 粘液胶（基础设施附属，归基础档，2026-08-13 确认）
     );

@@ -194,6 +194,7 @@ class PriceScannerTest {
         assertEquals(1.2, AddonMultiplier.of("Slimefun"), 1e-9);
         assertEquals(1.5, AddonMultiplier.of("FoxyMachines"), 1e-9);
         assertEquals(2.0, AddonMultiplier.of("InfinityExpansion"), 1e-9);
+        assertEquals(2.0, AddonMultiplier.of("CrystamaeHistoria"), 1e-9); // 魔法档（水晶编年史，v1.4）
         assertEquals(1.2, AddonMultiplier.of("UnknownAddon"), 1e-9); // 未知默认基础
         assertEquals(1.2, AddonMultiplier.of(null), 1e-9);
     }

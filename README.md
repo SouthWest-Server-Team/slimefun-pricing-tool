@@ -23,7 +23,8 @@ base 价 = Σ(配方材料数量 × 材料单价) × 加工系数(来源附属)
 | Slimefun（本体）| 1.2 | 基础 |
 | FoxyMachines（神秘科技）| 1.5 | 中级 |
 | InfinityExpansion（无尽科技）| 2.0 | 高级 |
-| Networks / SlimeGlue 等基础设施附属 | 1.2 | 基础（2026-08-13 已确认）|
+| CrystamaeHistoria（水晶编年史）| 2.0 | 魔法 |
+| Networks / SlimeGlue 等基础设施附属 | 1.2 | 基础（2026-08-13 已确认） |
 
 - **无配方物品**（RecipeType 为 mob_drop / barter_drop / geo_miner / null / interact）→ 归入 `no-recipe-manual-whitelist`（需求 v1.4 例外条款：白名单手动定价）
 - **配方循环依赖**检测（A 需要 B、B 需要 A）→ 记入 `recipe-cycles`，不卡死
